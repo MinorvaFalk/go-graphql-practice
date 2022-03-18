@@ -1,0 +1,38 @@
+schema:
+  # - graph/*.graphqls
+  - graph/schema.graphql
+
+exec:
+  filename: graph/generated.go
+
+model:
+  filename: graph/model/models_gen.go
+  package: models
+
+resolver:
+  layout: follow-schema
+  dir: graph
+  package: graph
+
+autobind:
+#  - "github.com/MinorvaFalk/go-graphql-practice/graph/model"
+
+models:
+  # ID:
+  #   model:
+  #     - github.com/99designs/gqlgen/graphql.ID
+  #     - github.com/99designs/gqlgen/graphql.Int
+  #     - github.com/99designs/gqlgen/graphql.Int64
+  #     - github.com/99designs/gqlgen/graphql.Int32
+  #     - github.com/99designs/gqlgen/graphql.Int32
+  # Int:
+  #   model:
+  #     - github.com/99designs/gqlgen/graphql.Int
+  #     - github.com/99designs/gqlgen/graphql.Int64
+  #     - github.com/99designs/gqlgen/graphql.Int32
+
+  Book:
+    model: github.com/MinorvaFalk/go-graphql-practice/models.Book
+
+  Author:
+    model: github.com/MinorvaFalk/go-graphql-practice/models.Author
