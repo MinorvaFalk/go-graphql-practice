@@ -9,25 +9,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type graphqlHandler struct {
+type GraphqlHandler struct {
+	r  *gin.Engine
 	bs services.BookService
 	as services.AuthorService
 }
 
-func NewGraphqlHandler(r *gin.Engine, bs services.BookService, as services.AuthorService) {
-	h := &graphqlHandler{bs, as}
+func NewGraphqlHandler(r *gin.Engine, bs services.BookService, as services.AuthorService) GraphqlHandler {
+	h := GraphqlHandler{r, bs, as}
+	return h
+}
 
-	r.POST("/query", middleware.GinContextToContextMiddleware(), h.graphqlHandler())
-	r.GET("/", h.playgroundHandler())
+func (gh GraphqlHandler) SetupHandler() {
+	gh.r.POST("/query", middleware.GinContextToContextMiddleware(), gh.graphqlHandler())
+	gh.r.GET("/", gh.playgroundHandler())
 }
 
 // Defining the Graphql handler
-func (gh *graphqlHandler) graphqlHandler() gin.HandlerFunc {
+func (gh *GraphqlHandler) graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		gh.bs,
-		gh.as,
+		Bs: gh.bs,
+		As: gh.as,
 	}}))
 
 	return func(c *gin.Context) {
@@ -36,7 +40,7 @@ func (gh *graphqlHandler) graphqlHandler() gin.HandlerFunc {
 }
 
 // Defining the Playground handler
-func (gh *graphqlHandler) playgroundHandler() gin.HandlerFunc {
+func (gh *GraphqlHandler) playgroundHandler() gin.HandlerFunc {
 	h := playground.Handler("GraphQL", "/query")
 
 	return func(c *gin.Context) {

@@ -14,8 +14,8 @@ type bookPostgresRepository struct {
 	db *gorm.DB
 }
 
-func NewBookPostgresRepository(l *log.Logger, db *gorm.DB) BookRepository {
-	return &bookPostgresRepository{l, db}
+func NewBookPostgresRepository(l *log.Logger, db *utils.Database) BookRepository {
+	return &bookPostgresRepository{l, db.DB}
 }
 
 func (r *bookPostgresRepository) FetchAllBook() ([]models.Book, error) {

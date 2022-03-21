@@ -14,8 +14,8 @@ type authorPostgresRepository struct {
 	db *gorm.DB
 }
 
-func NewAuthorPostgresRepository(l *log.Logger, db *gorm.DB) AuthorRepository {
-	return &authorPostgresRepository{l, db}
+func NewAuthorPostgresRepository(l *log.Logger, db *utils.Database) AuthorRepository {
+	return &authorPostgresRepository{l, db.DB}
 }
 
 func (r *authorPostgresRepository) FetchAllAuthor() ([]models.Author, error) {
