@@ -1,35 +1,63 @@
 package main
 
 import (
-	"log"
-	"os"
+	"context"
 
 	"github.com/MinorvaFalk/go-graphql-practice/core/utils"
 	handler "github.com/MinorvaFalk/go-graphql-practice/handlers"
-	"github.com/MinorvaFalk/go-graphql-practice/repository"
-	"github.com/MinorvaFalk/go-graphql-practice/services"
-	"github.com/gin-contrib/cors"
+	"github.com/MinorvaFalk/go-graphql-practice/module"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 )
 
 func main() {
-	l := log.New(os.Stdout, "[Book API] ", log.LstdFlags)
-	env := utils.NewEnv(l)
-	db := utils.GetDatabaseGORM(l, env)
+	app := fx.New(
+		module.Module,
+		fx.Invoke(startup),
+	)
 
-	br := repository.NewBookPostgresRepository(l, db.DB)
-	bs := services.NewBookService(l, br)
+	app.Run()
 
-	ar := repository.NewAuthorPostgresRepository(l, db.DB)
-	as := services.NewAuthorService(l, ar)
+	// l := log.New(os.Stdout, "[Book API] ", log.LstdFlags)
+	// env := utils.NewEnv(l)
+	// db := utils.GetDatabaseGORM(l, env)
 
-	r := gin.Default()
-	r.Use(cors.Default())
+	// br := repository.NewBookPostgresRepository(l, db.DB)
+	// bs := services.NewBookService(l, br)
 
-	handler.NewGraphqlHandler(r, bs, as)
+	// ar := repository.NewAuthorPostgresRepository(l, db.DB)
+	// as := services.NewAuthorService(l, ar)
 
-	// Handle REST Request
-	// handler.NewRestHandler(r)
+	// r := gin.Default()
+	// r.Use(cors.Default())
 
-	r.Run(env.Port)
+	// handler.NewGraphqlHandler(r, bs, as)
+
+	// // Handle REST Request
+	// // handler.NewRestHandler(r)
+
+	// go func() {
+
+	// }()
+}
+
+func startup(lifecycle fx.Lifecycle, db *utils.Database, env *utils.Env, handler handler.Handlers, r *gin.Engine) {
+	conn, _ := db.DB.DB()
+
+	lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go func() {
+				handler.SetupHandler()
+				r.Run(env.Port)
+			}()
+			return nil
+		},
+
+		OnStop: func(ctx context.Context) error {
+
+			conn.Close()
+			return nil
+		},
+	})
+
 }
